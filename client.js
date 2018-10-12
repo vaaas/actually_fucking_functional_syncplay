@@ -58,9 +58,7 @@ function main() {
 	const mpv_proc = child_process.spawn("mpv", [file, "--pause", `--input-ipc-server=${socket_path}`])
 	mpv_proc.stdout.on("data", () => {
 		if (!ready) {
-			WebSocketClient(ip, 8001, MPV("/tmp/mpvsocket"))
+			WebSocketClient(ip, 8001, MPV(socket_path))
 			ready = true }}) }
 	
-	
-
 main()
