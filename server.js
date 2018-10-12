@@ -28,7 +28,15 @@ function WebSocketServer(ip, port) {
 		console.log(socket._socket.remoteAddress, "connected")
 		socket.on("message", on_message) }
 
-	function on_message(message) { console.log("message") }
+	function on_message(message) {
+		switch(message) {
+			case "pause":
+				pause()
+				break
+			case "unpause":
+				play()
+				break }}
+	
 	function play() { broadcast("play") }
 	function pause() { broadcast("pause") }
 	
