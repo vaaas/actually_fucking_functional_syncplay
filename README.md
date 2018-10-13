@@ -2,6 +2,12 @@ I'll write more later.
 
 # Setup
 
-	npm init
+Install node.js, it's the only dependency.
+
+## Server
+
 	./server.js host_or_ip
-	./client.js host_or_ip path_to_video_file
+
+## Client
+
+	./client.sh host_or_ip path_to_video_file
