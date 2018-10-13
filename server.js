@@ -26,7 +26,7 @@ function Server(ip, port) {
 				break }}
 
 	function on_connection(socket) {
-		console.log(`${socket.localAddress} connected`)
+		console.log(`${socket.remoteAddress} connected`)
 		connections.add(socket)
 		socket.on("data", on_data)
 		socket.on("close", on_close)

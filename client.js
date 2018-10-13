@@ -7,7 +7,7 @@ const net = require("net")
 const socket_path = "/tmp/mpvsocket.sock"
 
 function Client(ip, port, mpv) {
-	//mpv.set_callback(pause_unpause)
+	mpv.set_callback(pause_unpause)
 	const connection = new net.Socket()
 	connection.connect(port, ip, on_connect)
 	connection.on("error", on_error)
@@ -51,7 +51,7 @@ function MPV(path) {
 	socket.setMaxListeners(0)
 	connect()
 	socket.on("close", reconnect)
-	//socket.on("data", listen_pause)
+	socket.on("data", listen_pause)
 	
 	function listen_pause(buffer) {
 		let obj
@@ -66,8 +66,7 @@ function MPV(path) {
 	
 	function connect() {
 		socket.connect({path: path}, () => { console.log("connected to mpv socket") })
-		//observe_pause() }
-		}
+		observe_pause() }
 		
 	function reconnect() {
 		console.log("Lost connection to socket, attempting to reconnect")
@@ -94,14 +93,6 @@ function main() {
 	const ip = process.argv[2]
 	const file = process.argv[3]
 	let ready = false
-	const mpv_proc = child_process.spawn("mpv", [file, "--pause", `--input-ipc-server=${socket_path}`])
-	mpv_proc.on("exit", () => {
-		console.log("video ended, exiting...")
-		process.exit(0)})
-	mpv_proc.stdout.on("data", () => {
-		if (!ready) {
-			console.log("SWAG")
-			Client(ip, 8001, MPV(socket_path))
-			ready = true }}) }
+	Client(ip, 8001, MPV(socket_path)) }
 	
 main()
