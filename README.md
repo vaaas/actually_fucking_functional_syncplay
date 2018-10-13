@@ -10,4 +10,4 @@ Install node.js, it's the only dependency.
 
 ## Client
 
-	./client.sh host_or_ip path_to_video_file
+	./client.js host_or_ip path_to_video_file

@@ -92,7 +92,14 @@ function MPV(path) {
 function main() {
 	const ip = process.argv[2]
 	const file = process.argv[3]
-	let ready = false
-	Client(ip, 8001, MPV(socket_path)) }
+	console.log(file)
+	const mpv_proc = child_process.spawn("mpv", [file, "--pause", `--input-ipc-server=${socket_path}`], {stdio: ["ignore", "pipe", "pipe"]})
+	mpv_proc.stdout.pipe(process.stdout)
+	mpv_proc.stderr.pipe(process.stderr)
+	mpv_proc.on("exit", () => {
+		console.log("video ended, exiting...")
+		process.exit(0)})
+	setTimeout(function() {
+		Client(ip, 8001, MPV(socket_path))}, 1000) }
 	
 main()
