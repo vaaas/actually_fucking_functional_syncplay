@@ -4,27 +4,37 @@
 
 const child_process = require("child_process")
 const net = require("net")
-const ws = require("ws")
 const socket_path = "/tmp/mpvsocket.sock"
 
-function WebSocketClient(ip, port, mpv) {
+function Client(ip, port, mpv) {
 	mpv.set_callback(pause_unpause)
-	const connection = new ws(`ws://${ip}:${port}/`)
-	connection.on("open", () => {
-		console.log("connected to websocket server") })
-	connection.on("message", on_message)
+	const connection = new net.Socket()
+	connection.connect(port, ip, on_connect)
+	connection.on("error", on_error)
+	connection.on("data", on_data)
+	connection.on("close", on_close)
+	
+	function on_connect() { console.log(`connected to ${ip}:${port}`) }
+	
+	function on_close() {
+		console.log("connection closed, exiting")
+		process.exit(0) }
+	
+	function on_error(error) {
+		console.log(error)
+		process.exit(0) }
 	
 	function pause_unpause(what) {
 		switch(what) {
 			case "pause":
-				connection.send("pause")
+				connection.write("pause")
 				break
 			case "unpause":
-				connection.send("unpause")
+				connection.write("unpause")
 				break }}
 	
-	function on_message(what) {
-		switch(what) {
+	function on_data(buffer) {
+		switch(buffer.toString("utf8")) {
 			case "play":
 				mpv.play()
 				break
@@ -89,7 +99,7 @@ function main() {
 		process.exit(0)})
 	mpv_proc.stdout.on("data", () => {
 		if (!ready) {
-			WebSocketClient(ip, 8001, MPV(socket_path))
+			Client(ip, 8001, MPV(socket_path))
 			ready = true }}) }
 	
 main()

@@ -2,13 +2,14 @@
 // jshint asi: true
 // jshint esversion: 6
 
-const ws = require("ws")
+const net = require("net")
 const readline = require("readline")
 
-function WebSocketServer(ip, port) {
-	const server = new ws.Server({ port: port, host: ip})
-	server.on("connection", on_connection)
-	console.log("websocket listening to", ip + ":" + port)
+function Server(ip, port) {
+	const connections = new Set()
+	const server = net.createServer(on_connection)
+	server.listen(port, ip)
+	console.log(`tcp server listening to ${ip}:${port}`)
 	console.log("'play' to play, 'pause' to pause, 'quit' to quit")	
 	Readline(on_readline)
 	
@@ -25,11 +26,14 @@ function WebSocketServer(ip, port) {
 				break }}
 
 	function on_connection(socket) {
-		console.log(socket._socket.remoteAddress, "connected")
-		socket.on("message", on_message) }
+		console.log(`${socket.localAddress} connected`)
+		connections.add(socket)
+		socket.on("data", on_data)
+		socket.on("close", on_close)
+		socket.on("error", on_error) }
 
-	function on_message(message) {
-		switch(message) {
+	function on_data(buffer) {
+		switch(buffer.toString("utf8")) {
 			case "pause":
 				pause()
 				break
@@ -37,12 +41,15 @@ function WebSocketServer(ip, port) {
 				play()
 				break }}
 	
+	function on_close() { connections.delete(this) }
+	function on_error() { connections.delete(this) }
+	
 	function play() { broadcast("play") }
 	function pause() { broadcast("pause") }
 	
 	function broadcast(what) {
-		server.clients.forEach(client => {
-			client.send(what) })}}
+		connections.forEach(client => {
+			client.write(what) })}}
 
 function Readline (cb) {
 	const rl = readline.createInterface({
@@ -55,6 +62,6 @@ function Readline (cb) {
 
 function main() {
 	const ip = process.argv[2] ? process.argv[2] : "0.0.0.0"
-	WebSocketServer(ip, 8001) }
+	Server(ip, 8001) }
 
 main()
